@@ -245,7 +245,9 @@ function stdhead($title = "") {
         $title = $site_config['SITENAME'];
     else
         $title = $site_config['SITENAME']. " : ". htmlspecialchars($title);
-
+    if (null === $THEME) {
+        $THEME = $site_config['THEME'];
+    }
 	require_once("themes/" . $THEME . "/block.php");
 	require_once("themes/" . $THEME . "/header.php");
 }

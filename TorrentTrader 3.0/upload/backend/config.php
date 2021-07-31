@@ -23,7 +23,8 @@ $site_config['PASSKEYURL'] =  "$site_config[SITEURL]/announce.php?passkey=%s"; /
 $site_config['UPLOADSCRAPE'] = true; // Scrape external torrents on upload? If using mega-scrape.php you should disable this
 $site_config['FORUMS'] = true; // Enable / Disable Forums
 $site_config['FORUMS_GUESTREAD'] = false; // Allow / Disallow Guests To Read Forums
-$site_config["OLD_CENSOR"] = false; // Use the old change to word censor set to true otherwise use the new one.   
+$site_config["OLD_CENSOR"] = false; // Use the old change to word censor set to true otherwise use the new one.
+$site_config['THEME'] = 'default';
 
 $site_config['maxusers'] = 20000; // Max # of enabled accounts
 $site_config['maxusers_invites'] = $site_config['maxusers'] + 5000; // Max # of enabled accounts when inviting
