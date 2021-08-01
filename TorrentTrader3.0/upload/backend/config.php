@@ -3,9 +3,9 @@ $site_config = array();
 $site_config['ttversion'] = '3.0';							//DONT CHANGE THIS!
 
 // Main Site Settings
-$site_config['SITENAME'] = 'Testing';					//Site Name
+$site_config['SITENAME'] = 'default';					//Site Name
 $site_config['SITEEMAIL'] = 'change@myemailsux.com';		//Emails will be sent from this address
-$site_config['SITEURL'] = 'http://site.com';	//Main Site URL
+$site_config['SITEURL'] = 'https://new.test';	//Main Site URL
 $site_config['default_language'] = "1";						//DEFAULT LANGUAGE ID
 $site_config['default_theme'] = "1";						//DEFAULT THEME ID
 $site_config['CHARSET'] = "utf-8";						//Site Charset
@@ -133,5 +133,5 @@ $site_config["passhash_method"] = "sha1"; // Hashing method (sha1, md5 or hmac).
 $site_config["passhash_algorithm"] = "sha1"; // See http://php.net/hash_algos for a list of supported algorithms.
 $site_config["passhash_salt"] = ""; // Shouldn't be blank. At least 20 characters of random text.
 
-die("You didn't edit your config correctly."); // You MUST remove this line
+//die("You didn't edit your config correctly."); // You MUST remove this line
 ?>
