@@ -104,6 +104,9 @@ if ($_POST["takeupload"] == "yes") {
 	$internalname = $TorrentInfo[3];
 	$torrentsize = $TorrentInfo[4];
 	$filecount = $TorrentInfo[5];
+	if (false === \is_countable($filecount)){
+        $filecount = 1;
+    }
 	$annlist = $TorrentInfo[6];
 	$comment = $TorrentInfo[7];
 	$filelist = $TorrentInfo[8];
