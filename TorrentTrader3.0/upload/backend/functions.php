@@ -963,7 +963,12 @@ function torrenttable($res) {
 				print("<td class='ttable_col$x' nowrap='nowrap'>".(count($expandrows)?"<a href=\"javascript: klappe_torrent('t".$row['id']."')\"><img border=\"0\" src=\"".$site_config["SITEURL"]."/images/plus.gif\" id=\"pict".$row['id']."\" alt=\"Show/Hide\" class=\"showthecross\" /></a>":"")."&nbsp;<a title=\"".$row["name"]."\" href=\"torrents-details.php?id=$id&amp;hit=1\">$dispname</a></td>");
 			break;
 			case 'dl':
-				print("<td class='ttable_col$x' align='center'><a href=\"download.php?id=$id&amp;name=" . rawurlencode($row["filename"]) . "\"><img src='" . $site_config['SITEURL'] . "/images/icon_download.gif' border='0' alt=\"Download .torrent\" /></a></td>");
+			    if (!$CURUSER){
+                    print("<td class='ttable_col$x' align='center'><a href=\"account-login.php". "\"><img src='" . $site_config['SITEURL'] . "/images/icon_download.gif' border='0' alt=\"Download .torrent\" /></a></td>");
+                }else {
+
+                    print("<td class='ttable_col$x' align='center'><a href=\"download.php?id=$id&amp;name=" . rawurlencode($row["filename"]) . "\"><img src='" . $site_config['SITEURL'] . "/images/icon_download.gif' border='0' alt=\"Download .torrent\" /></a></td>");
+                }
 			break;
 			case 'uploader':
 				echo "<td class='ttable_col$x' align='center'>";

@@ -109,7 +109,13 @@ echo "<center><table border='0' width='100%'><tr><td><div id='downloadbox'>";
 if ($row["banned"] == "yes"){
 	print ("<center><b>" .T_("DOWNLOAD"). ": </b>BANNED!</center>");
 }else{
-	print ("<table border='0' cellpadding='0' width='100%'><tr><td align='center' valign='middle' width='54'><a href=\"download.php?id=$id&amp;name=" . rawurlencode($row["filename"]) . "\"><img src=\"".$site_config["SITEURL"]."/images/download_torrent.png\" border=\"0\" alt='' /></a></td>");
+	if (null=== $CURUSER) {
+        print ("<table border='0' cellpadding='0' width='100%'><tr><td align='center' valign='middle' width='54'><a href=\"account-login.php \"><img src=\"".$site_config["SITEURL"]."/images/download_torrent.png\" border=\"0\" alt='' /></a></td>");
+    }else {
+        print ("<table border='0' cellpadding='0' width='100%'><tr><td align='center' valign='middle' width='54'><a href=\"download.php?id=$id&amp;name=" . rawurlencode($row["filename"]) . "\"><img src=\"".$site_config["SITEURL"]."/images/download_torrent.png\" border=\"0\" alt='' /></a></td>");
+
+    }
+
 	print ("<td valign='top'><a href=\"download.php?id=$id&amp;name=" . rawurlencode($row["filename"]) . "\">".T_("DOWNLOAD_TORRENT")."</a><br />");
 	print ("<b>" .T_("HEALTH"). ": </b><img src='".$site_config["SITEURL"]."/images/health/health_".health($row["leechers"], $row["seeders"]).".gif' alt='' /><br />");
 	print ("<b>" .T_("SEEDS"). ": </b><font color='green'>" . number_format($row["seeders"]) . "</font><br />");
