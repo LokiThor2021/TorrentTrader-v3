@@ -57,7 +57,7 @@ if ($site_config['NEWSON'] && $CURUSER['view_news'] == "yes"){
 
 
 if ($site_config['SHOUTBOX'] && !($CURUSER['hideshoutbox'] == 'yes')){ 
-	begin_frame(T_("SHOUTBOX"));
+	begin_frame(T_("Shoutbox"));
 	echo '<iframe name="shout_frame" src="shoutbox.php" frameborder="0" marginheight="0" marginwidth="0" width="99%" height="210" scrolling="no" align="middle"></iframe>';
 	printf(T_("SHOUTBOX_REFRESH"), 5)."<br />";
 	end_frame();
