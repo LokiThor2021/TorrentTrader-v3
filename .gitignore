@@ -5,3 +5,5 @@ _notes/
 /bower_components/
 /node_modules/
 /TorrentTrader3.0/upload/backend/config.php
+/TorrentTrader3.0/upload/backend/mysql.php
+/TorrentTrader3.0/upload/check.php
