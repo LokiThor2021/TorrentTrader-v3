@@ -178,7 +178,7 @@ if ($row["banned"] == "yes") {
                     $tracker = "http://tracker.openbittorrent.com/scrape";
                 }
 
-                if (empty($stats['downloaded'] || !isset($stats['downloaded']) || is_countable($stats['downloaded']))) {
+                if (empty($stats['downloaded'] || !isset($stats['downloaded']) || !is_countable($stats['downloaded']))) {
                     $stats['downloaded'] = 0;
                 }
                 $stats = torrent_scrape_url($tracker, $row["info_hash"]);
