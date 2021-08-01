@@ -1,6 +1,11 @@
 <?php
+
+use Medariox\Scraper;
+
 require_once("backend/functions.php");
 require_once("backend/BDecode.php");
+require_once('backend/Scraper.php');
+require_once('backend/Torrent.php');
 dbconn();
 
 $torrent_dir = $site_config["torrent_dir"];	
@@ -68,7 +73,7 @@ if ($_GET["takerating"] == 'yes'){
 if ($_GET["takecomment"] == 'yes'){
 	loggedinonly();
 	$body = $_POST['body'];
-	
+
 	if (!$body)
 		show_error_msg(T_("RATING_ERROR"), T_("YOU_DID_NOT_ENTER_ANYTHING"), 1);
 
@@ -101,7 +106,7 @@ if ($row["leechers"] >= 1 && $row["seeders"] >= 1 && $row["external"]!='yes'){
 	$a = mysqli_fetch_assoc($speedQ);
 	$totalspeed = mksize($a["totalspeed"]) . "/s";
 }else{
-	$totalspeed = T_("NO_ACTIVITY"); 
+	$totalspeed = T_("NO_ACTIVITY");
 }
 
 //download box
@@ -125,7 +130,7 @@ if ($row["banned"] == "yes"){
 		print ("<b>".T_("SPEED").": </b>" . $totalspeed . "<br />");
 	}
 
-	print ("<b>".T_("COMPLETED").":</b> " . number_format($row["times_completed"]) . "&nbsp;"); 
+	print ("<b>".T_("COMPLETED").":</b> " . number_format($row["times_completed"]) . "&nbsp;");
 
 	if ($row["external"] != "yes" && $row["times_completed"] > 0) {
 		echo("[<a href='torrents-completed.php?id=$id'>" .T_("WHOS_COMPLETED"). "</a>] ");
@@ -165,12 +170,23 @@ if ($row["banned"] == "yes"){
 					$tracker = "http://tracker.openbittorrent.com/scrape";
 				}
 
-				$stats = torrent_scrape_url($tracker, $row["info_hash"]);
-				if ($stats['seeds'] != -1) {
-					$seeders1 += $stats['seeds'];
-					$leechers1 += $stats['peers'];
-					$downloaded1 += $stats['downloaded'];
-					SQL_Query_exec("UPDATE `announce` SET `online` = 'yes', `seeders` = $stats[seeds], `leechers` = $stats[peers], `times_completed` = $stats[downloaded] WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
+
+//				$stats = torrent_scrape_url($tracker, $row["info_hash"]);
+
+                $torrent = new Torrent("uploads/$id.torrent");
+                try {
+                    $scraped = $torrent->scrape();
+                } catch (\Exception $e) {
+                    //$scraped = $torrent->errors();
+                    //exit();
+                    die($e->getMessage());
+                }
+                $stats = $scraped[$row["info_hash"]];
+				if ($stats['seeders'] != -1) {
+					$seeders1 += $stats['leechers'];
+					$leechers1 += $stats['leechers'];
+					$downloaded1 += $stats['completed'];
+					SQL_Query_exec("UPDATE `announce` SET `online` = 'yes', `seeders` = $stats[seeders], `leechers` = $stats[leechers], `times_completed` = $stats[completed] WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
 				} else {
 					SQL_Query_exec("UPDATE `announce` SET `online` = 'no' WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
 
@@ -183,7 +199,7 @@ if ($row["banned"] == "yes"){
 				print ("Leechers: ".number_format($leechers1)."<br />");
 				print (T_("COMPLETED").": ".number_format($downloaded1)."<br />");
 
-				SQL_Query_exec("UPDATE torrents SET leechers='".$leechers1."', seeders='".$seeders1."', times_completed='".$downloaded1."',last_action= '".get_date_time()."',visible='yes' WHERE id='".$row['id']."'"); 
+				SQL_Query_exec("UPDATE torrents SET leechers='".$leechers1."', seeders='".$seeders1."', times_completed='".$downloaded1."',last_action= '".get_date_time()."',visible='yes' WHERE id='".$row['id']."'");
 			}else{
 				print ("<b>".T_("LIVE_STATS").": </b><br />");
 				print ("<font color='#ff0000'>Tracker Timeout<br />Please retry later</font><br />");
@@ -278,7 +294,7 @@ print("<center>". $srating . "</center>");// rating
 //END DEFINE RATING VARIABLE
 
 echo "<br />";
-                                                  
+
 if ($row["image1"] != "" OR $row["image2"] != "") {
   if ($row["image1"] != "")
     $img1 = "<img src='".$site_config["SITEURL"]."/uploads/images/$row[image1]' width='150' border='0' alt='' />";
@@ -342,7 +358,7 @@ if ($row["external"]!='yes'){
 
 			<?php
 			while($row1 = mysqli_fetch_assoc($query))	{
-				
+
 				if ($row1["downloaded"] > 0){
 					$ratio = $row1["uploaded"] / $row1["downloaded"];
 					$ratio = number_format($ratio, 3);
@@ -350,18 +366,18 @@ if ($row["external"]!='yes'){
 					$ratio = "---";
 				}
 
-				$percentcomp = sprintf("%.2f", 100 * (1 - ($row1["to_go"] / $row["size"])));    
+				$percentcomp = sprintf("%.2f", 100 * (1 - ($row1["to_go"] / $row["size"])));
 
 				if ($site_config["MEMBERSONLY"]) {
 					$res = SQL_Query_exec("SELECT id, username, privacy FROM users WHERE id=".$row1["userid"]."");
 					$arr = mysqli_fetch_array($res);
-                    
+
                     $arr["username"] = "<a href='account-details.php?id=$arr[id]'>$arr[username]</a>";
 				}
-                
+
                 # With $site_config["MEMBERSONLY"] off this will be shown.
                 if ( !$arr["username"] ) $arr["username"] = "Unknown User";
-        
+
 				if ($arr["privacy"] != "strong" || ($CURUSER["control_panel"] == "yes")) {
 					print("<tr><td class='table_col2'>".$row1["port"]."</td><td class='table_col1'>".mksize($row1["uploaded"])."</td><td class='table_col2'>".mksize($row1["downloaded"])."</td><td class='table_col1'>".$ratio."</td><td class='table_col2'>".mksize($row1["to_go"])."</td><td class='table_col1'>".$percentcomp."%</td><td class='table_col2'>$row1[seeder]</td><td class='table_col1'>$row1[connectable]</td><td class='table_col2'>".htmlspecialchars($row1["client"])."</td><td class='table_col1'>$arr[username]</td></tr>");
 				}else{
@@ -422,7 +438,7 @@ if($row["nfo"]== "yes"){
 	$nfofilelocation = "$nfo_dir/$row[id].nfo";
 	$filegetcontents = file_get_contents($nfofilelocation);
 	$nfo = htmlspecialchars($filegetcontents);
-		if ($nfo) {	
+		if ($nfo) {
 			$nfo = my_nfo_translate($nfo);
 			echo "<br /><br /><b>NFO:</b><br />";
 			print("<textarea class='nfo' style='width:98%;height:100%;' rows='20' cols='20' readonly='readonly'>".stripslashes($nfo)."</textarea>");
