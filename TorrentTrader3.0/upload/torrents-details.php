@@ -152,10 +152,7 @@ if ($row["banned"] == "yes") {
 
     print ("<b>".T_("LAST_CHECKED").": </b>".date("d-m-Y H:i:s",
             utc_to_tz_time($row["last_action"]))."<br /></td>");
-?>
-    <input style="float: right" type="button" value="update stats" id="update_stats">
 
-    <?php
 //    if ($row["external"] == 'yes') {
 //
 //        if ($scrape == '1') {
