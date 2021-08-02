@@ -7,3 +7,5 @@ _notes/
 /TorrentTrader3.0/upload/backend/config.php
 /TorrentTrader3.0/upload/backend/mysql.php
 /TorrentTrader3.0/upload/check.php
+/TorrentTrader3.0/upload/get-torrent-stats.php
+TorrentTrader3.0/upload/trader-scrape.php
