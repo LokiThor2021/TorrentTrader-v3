@@ -178,14 +178,14 @@ if ($row["banned"] == "yes") {
                     $tracker = "http://tracker.openbittorrent.com/scrape";
                 }
 
-                if (empty($stats['downloaded'] || !isset($stats['downloaded']) || !is_countable($stats['downloaded']))) {
-                    $stats['downloaded'] = 0;
-                }
                 $stats = torrent_scrape_url($tracker, $row["info_hash"]);
                 if ($stats['seeds'] != -1) {
                     $seeders1 += $stats['seeds'];
                     $leechers1 += $stats['peers'];
                     $downloaded1 += $stats['downloaded'];
+                    if (empty($stats['downloaded'] || !isset($stats['downloaded']) || !is_countable($stats['downloaded']))) {
+                        $stats['downloaded'] = 0;
+                    }
                     SQL_Query_exec("UPDATE `announce` SET `online` = 'yes', `seeders` = $stats[seeds], `leechers` = $stats[peers], `times_completed` = $stats[downloaded] WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
                 } else {
                     SQL_Query_exec("UPDATE `announce` SET `online` = 'no' WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
