@@ -152,7 +152,10 @@ if ($row["banned"] == "yes") {
 
     print ("<b>".T_("LAST_CHECKED").": </b>".date("d-m-Y H:i:s",
             utc_to_tz_time($row["last_action"]))."<br /></td>");
+    ?>
+    <a style="float: right" href="/trader-scrape.php?id=<?=$id?>&return=yes">update Stats</a>
 
+    <?php
 //    if ($row["external"] == 'yes') {
 //
 //        if ($scrape == '1') {
@@ -210,8 +213,9 @@ if ($row["banned"] == "yes") {
 //            print ("<td valign='top' align='right'><b>Tracked:</b> EXTERNAL<br /><br /><form action='torrents-details.php?id=$id&amp;scrape=1' method='post'><input type=\"submit\" name=\"submit\" value=\"Update Stats\" /></form></td>");
 //        }
 //    }
-
+// kdfgjdfkg
     echo "</tr></table>";
+    echo "<div id='updated-stats'</div>";
 }
 echo "</div></td></tr></table></center><br /><br />";
 //end download box

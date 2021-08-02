@@ -5,6 +5,7 @@
 // with much better class and logic, and updates seeders/leechers in database by ID
 
 require_once 'backend/functions.php';
+require_once("backend/BDecode.php");
 $torrentid = isset($_GET['id']) ? (int) $_GET['id'] : 0; // Get torrent ID ?id=
 $limit = 1;
 $dsn = 'mysql:dbname=tt;host=localhost;charset=utf8';
@@ -131,17 +132,95 @@ try {
     $timeout = 22;
     $scraper = new udptscraper($timeout);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $ret = $scraper->scrape($row['announce'], $row['info_hash']);
+        if (preg_match('%udp://([^:/]*)(?::([0-9]*))?(?:/)?%si', $row['announce'], $m)) {
+            $ret = $scraper->scrape($row['announce'], $row['info_hash']);
+        }
+        $http = parse_url($row['announce'], PHP_URL_SCHEME);
+
+
+        if ('http' == $http || 'https' == $http) {
+            $ann = $row['announce'];
+            $tracker = explode("/", $ann);
+            $path = array_pop($tracker);
+            $oldpath = $path;
+            $path = preg_replace("/^announce/", "scrape", $path);
+            $tracker = implode("/", $tracker)."/".$path;
+            if ($oldpath == $path) {
+                continue; // Scrape not supported, ignored
+            }
+            $ret[$row['info_hash']] = http_torrent_scrape_url($tracker, $row['info_hash']);
+        }
     }
     foreach ($ret as $key => $value) {
         $stmt = $conn->prepare("UPDATE torrents SET leechers='".$value['leechers']."', seeders='".$value['seeders']."', times_completed='".$value['completed']."', last_action='".get_date_time()."', visible='yes' WHERE id = :torrentid");
         $stmt->bindValue(':torrentid', $torrentid, PDO::PARAM_INT);
         $stmt->execute();
+
+    }
+    if (isset($_GET['return'])){
+        header("location: torrents-details.php?id=$torrentid");
     }
 } catch (ScraperException $e) {
     echo('Error: '.$e->getMessage()."<br />\n");
     echo('Connection error: '.($e->isConnectionError() ? 'yes' : 'no')."<br />\n");
 }
-?>
 
 
+/**
+ * Scrape torrent and return stats
+ *
+ * @param $scrape
+ *   string: Scrape URL
+ * @param $hash
+ *   string: SHA1 hash (info_hash) of torrent
+ *
+ * @return
+ *   array:
+ *     All -1 if failed
+ *     - seeds: integer - number of seeders
+ *     - leechers: integer - number of leechers
+ *     - downloaded: integer - number of complete downloads
+ *
+ */
+function http_torrent_scrape_url($scrape, $hash)
+{
+    if (function_exists("curl_exec")) {
+        $ch = curl_init();
+        $timeout = 15;
+        curl_setopt($ch, CURLOPT_URL, $scrape.'?info_hash='.escape_url($hash));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        $fp = curl_exec($ch);
+        curl_close($ch);
+    } else {
+        ini_set('default_socket_timeout', 10);
+        $fp = @file_get_contents($scrape.'?info_hash='.escape_url($hash));
+    }
+    $ret = array();
+    if ($fp) {
+        $stats = BDecode($fp);
+        $binhash = pack("H*", $hash);
+        $binhash = addslashes($binhash);
+        $seeds = $stats['files'][$binhash]['complete'];
+        $peers = $stats['files'][$binhash]['incomplete'];
+        $downloaded = $stats['files'][$binhash]['downloaded'];
+        $ret['seeders'] = $seeds;
+        $ret['leechers'] = $peers;
+        $ret['completed'] = $downloaded;
+    }
+
+    if ($ret['seeders'] === null) {
+        $ret['seeders'] = 0;
+        $ret['leechers'] = 0;
+        $ret['completed'] = 0;
+        $ret['info_hash'] = $hash;
+        $ret['status'] = 'failed';
+    }
+
+    return $ret;
+}
+
+
+
+//(new  udptscraper())->scrape('http://p2p.arenabg.ch:2710/2fe5d3a4213ef551d6a111e0aae91871/announce','aff9fb81c063e64540bf41a105edb236e726d6ba');

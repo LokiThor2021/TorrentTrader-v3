@@ -27,7 +27,10 @@ if ($stmt->rowCount() > 0) {
         array_push($userData, $usersactive);
     }
 }
+if (isset($_GET['return'])){
+    header("location: torrents-details.php?id=$torrentid");
+}
 echo json_encode($usersactive, JSON_UNESCAPED_SLASHES);
-?>
+
 
 

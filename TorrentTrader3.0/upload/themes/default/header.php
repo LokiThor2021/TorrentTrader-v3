@@ -58,6 +58,7 @@
                     url: "trader-scrape.php?id=<?=$id; ?>",
                     method: "POST",
                     success: function (data) {
+                        console.log(data)
                         $("#peers-updated").html("Peers updated").delay(1000).fadeIn().delay(2000).fadeOut();
                     }
                 });
