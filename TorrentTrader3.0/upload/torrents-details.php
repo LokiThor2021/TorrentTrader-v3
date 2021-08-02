@@ -152,64 +152,67 @@ if ($row["banned"] == "yes") {
 
     print ("<b>".T_("LAST_CHECKED").": </b>".date("d-m-Y H:i:s",
             utc_to_tz_time($row["last_action"]))."<br /></td>");
+?>
+    <input style="float: right" type="button" value="update stats" id="update_stats">
 
-    if ($row["external"] == 'yes') {
-
-        if ($scrape == '1') {
-            print("<td valign='top' align='right'><b>Tracked: </b>EXTERNAL<br /><br />");
-            $seeders1 = $leechers1 = $downloaded1 = null;
-
-            $tres = SQL_Query_exec("SELECT url FROM announce WHERE torrent=$id");
-            while ($trow = mysqli_fetch_assoc($tres)) {
-                $ann = $trow["url"];
-                $tracker = explode("/", $ann);
-                $path = array_pop($tracker);
-                $oldpath = $path;
-                $path = preg_replace("/^announce/", "scrape", $path);
-                $tracker = implode("/", $tracker)."/".$path;
-
-                if ($oldpath == $path) {
-                    continue; // Scrape not supported, ignored
-                }
-
-                // TPB's tracker is dead. Use openbittorrent instead
-                if (preg_match("/thepiratebay.org/i", $tracker) || preg_match("/prq.to/",
-                        $tracker)) {
-                    $tracker = "http://tracker.openbittorrent.com/scrape";
-                }
-
-                $stats = torrent_scrape_url($tracker, $row["info_hash"]);
-                if ($stats['seeds'] != -1) {
-                    $seeders1 += $stats['seeds'];
-                    $leechers1 += $stats['peers'];
-                    $downloaded1 += $stats['downloaded'];
-                    if (empty($stats['downloaded'] || !isset($stats['downloaded']) || !is_countable($stats['downloaded']))) {
-                        $stats['downloaded'] = 0;
-                    }
-                    SQL_Query_exec("UPDATE `announce` SET `online` = 'yes', `seeders` = $stats[seeds], `leechers` = $stats[peers], `times_completed` = $stats[downloaded] WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
-                } else {
-                    SQL_Query_exec("UPDATE `announce` SET `online` = 'no' WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
-
-                }
-            }
-
-            if ($seeders1 !== null) { //only update stats if data is received
-                print ("<b>".T_("LIVE_STATS").": </b><br />");
-                print ("Seeders: ".number_format($seeders1)."<br />");
-                print ("Leechers: ".number_format($leechers1)."<br />");
-                print (T_("COMPLETED").": ".number_format($downloaded1)."<br />");
-
-                SQL_Query_exec("UPDATE torrents SET leechers='".$leechers1."', seeders='".$seeders1."', times_completed='".$downloaded1."',last_action= '".get_date_time()."',visible='yes' WHERE id='".$row['id']."'");
-            } else {
-                print ("<b>".T_("LIVE_STATS").": </b><br />");
-                print ("<font color='#ff0000'>Tracker Timeout<br />Please retry later</font><br />");
-            }
-
-            print ("<form action='torrents-details.php?id=$id&amp;scrape=1' method='post'><input type=\"submit\" name=\"submit\" value=\"Update Stats\" /></form></td>");
-        } else {
-            print ("<td valign='top' align='right'><b>Tracked:</b> EXTERNAL<br /><br /><form action='torrents-details.php?id=$id&amp;scrape=1' method='post'><input type=\"submit\" name=\"submit\" value=\"Update Stats\" /></form></td>");
-        }
-    }
+    <?php
+//    if ($row["external"] == 'yes') {
+//
+//        if ($scrape == '1') {
+//            print("<td valign='top' align='right'><b>Tracked: </b>EXTERNAL<br /><br />");
+//            $seeders1 = $leechers1 = $downloaded1 = null;
+//
+//            $tres = SQL_Query_exec("SELECT url FROM announce WHERE torrent=$id");
+//            while ($trow = mysqli_fetch_assoc($tres)) {
+//                $ann = $trow["url"];
+//                $tracker = explode("/", $ann);
+//                $path = array_pop($tracker);
+//                $oldpath = $path;
+//                $path = preg_replace("/^announce/", "scrape", $path);
+//                $tracker = implode("/", $tracker)."/".$path;
+//
+//                if ($oldpath == $path) {
+//                    continue; // Scrape not supported, ignored
+//                }
+//
+//                // TPB's tracker is dead. Use openbittorrent instead
+//                if (preg_match("/thepiratebay.org/i", $tracker) || preg_match("/prq.to/",
+//                        $tracker)) {
+//                    $tracker = "http://tracker.openbittorrent.com/scrape";
+//                }
+//
+//                $stats = torrent_scrape_url($tracker, $row["info_hash"]);
+//                if ($stats['seeds'] != -1) {
+//                    $seeders1 += $stats['seeds'];
+//                    $leechers1 += $stats['peers'];
+//                    $downloaded1 += $stats['downloaded'];
+//                    if (empty($stats['downloaded'] || !isset($stats['downloaded']) || !is_countable($stats['downloaded']))) {
+//                        $stats['downloaded'] = 0;
+//                    }
+//                    SQL_Query_exec("UPDATE `announce` SET `online` = 'yes', `seeders` = $stats[seeds], `leechers` = $stats[peers], `times_completed` = $stats[downloaded] WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
+//                } else {
+//                    SQL_Query_exec("UPDATE `announce` SET `online` = 'no' WHERE `url` = ".sqlesc($ann)." AND `torrent` = $id");
+//
+//                }
+//            }
+//
+//            if ($seeders1 !== null) { //only update stats if data is received
+//                print ("<b>".T_("LIVE_STATS").": </b><br />");
+//                print ("Seeders: ".number_format($seeders1)."<br />");
+//                print ("Leechers: ".number_format($leechers1)."<br />");
+//                print (T_("COMPLETED").": ".number_format($downloaded1)."<br />");
+//
+//                SQL_Query_exec("UPDATE torrents SET leechers='".$leechers1."', seeders='".$seeders1."', times_completed='".$downloaded1."',last_action= '".get_date_time()."',visible='yes' WHERE id='".$row['id']."'");
+//            } else {
+//                print ("<b>".T_("LIVE_STATS").": </b><br />");
+//                print ("<font color='#ff0000'>Tracker Timeout<br />Please retry later</font><br />");
+//            }
+//
+//            print ("<form action='torrents-details.php?id=$id&amp;scrape=1' method='post'><input type=\"submit\" name=\"submit\" value=\"Update Stats\" /></form></td>");
+//        } else {
+//            print ("<td valign='top' align='right'><b>Tracked:</b> EXTERNAL<br /><br /><form action='torrents-details.php?id=$id&amp;scrape=1' method='post'><input type=\"submit\" name=\"submit\" value=\"Update Stats\" /></form></td>");
+//        }
+//    }
 
     echo "</tr></table>";
 }

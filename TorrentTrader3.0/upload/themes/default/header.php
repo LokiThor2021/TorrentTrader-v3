@@ -20,8 +20,69 @@
 <link rel="shortcut icon" href="<?php echo $site_config["SITEURL"]; ?>/themes/default/images/favicon.ico" />
 <link rel="stylesheet" type="text/css" href="<?php echo $site_config["SITEURL"]; ?>/themes/default/theme.css" />
 <!-- JS -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js" type="text/javascript"></script> 
+<!--<script  src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js" type="text/javascript"></script>-->
+<script type="text/javascript" src="<?php echo $site_config["SITEURL"]; ?>/backend/jquery.js"></script>
 <script type="text/javascript" src="<?php echo $site_config["SITEURL"]; ?>/backend/java_klappe.js"></script>
+<script type="text/javascript" src="<?php echo $site_config["SITEURL"]; ?>/backend/java_klappe.js"></script>
+<script type="text/javascript" src="<?php echo $site_config["SITEURL"]; ?>/backend/theone.js"></script>
+
+    <?php if (stripos($_SERVER['PHP_SELF'],'torrents-details.php') && $CURUSER) { ?>
+    <script>
+        // Get peer data
+        function fetchPeerData() {
+            $(document).ready(function () {
+                $.ajax({
+                    url: "get-torrent-stats.php?id=<?=$id; ?>",
+                    method: "GET",
+                    dataType: 'JSON',
+                    success: function (data) {
+                        var html_to_append = '';
+                        $.each(data, function (i, item) {
+                            html_to_append +=
+                                '<div style="float:right"><span id="peers-updated"></span><span style="text-align:right;font-size:25px;color:#2E8B57">' +
+                                item.seeders +
+                                '</span><span style="text-align:right;font-size:25px;color:#C0C0C0;padding-left:10px;padding-right:5px">/</span><span style="text-align:right;font-size:18.75pt;color:#DC143C">' +
+                                item.leechers +
+                                '</span></div>';
+                        });
+                        $("#updated-stats").html(html_to_append);
+                        $("#animate").toggleClass('flip');
+                        $("#peers-updated").html("Peers updated").delay(1000).fadeIn().delay(2000).fadeOut();
+                    }
+                });
+            });
+
+// Update peer data
+            $(document).ready(function() {
+                $.ajax({
+                    url: "trader-scrape.php?id=<?=$id; ?>",
+                    method: "POST",
+                    success: function (data) {
+                        $("#peers-updated").html("Peers updated").delay(1000).fadeIn().delay(2000).fadeOut();
+                    }
+                });
+            });
+
+        }
+        fetchPeerData();
+        console.log('stats function')
+        setInterval(function () {
+            console.clear()
+            console.log('updating stats')
+            fetchPeerData()
+            console.log('updated stats')
+        }, 15000); // Update peer data every 15 sec on viewing torrent
+
+        <?php
+        }
+        ?>
+    </script>
+
+
+
+
+
+
 </head>
 <body>
     <div class='wrapper'>
@@ -33,18 +94,18 @@
                 if (!$CURUSER){
                     echo "[<a href=\"account-login.php\">".T_("LOGIN")."</a>]<b> ".T_("OR")." </b>[<a href=\"account-signup.php\">".T_("SIGNUP")."</a>]";
                 }else{
-                    print (T_("LOGGED_IN_AS").": ".$CURUSER["username"].""); 
+                    print (T_("LOGGED_IN_AS").": ".$CURUSER["username"]."");
                     echo " [<a href=\"account-logout.php\">".T_("LOGOUT")."</a>] ";
                     if ($CURUSER["control_panel"]=="yes") {
                         print("[<a href='admincp.php'>".T_("STAFFCP")."</a>] ");
                     }
-            
+
                     //check for new pm's
                     $res = SQL_Query_exec("SELECT COUNT(*) FROM messages WHERE receiver=" . $CURUSER["id"] . " and unread='yes' AND location IN ('in','both')");
                     $arr = mysqli_fetch_row($res);
                     $unreadmail = $arr[0];
                     if ($unreadmail){
-                        print("[<a href='mailbox.php?inbox'><b><font color='#ff0000'>$unreadmail</font> ".P_("NEWPM", $unreadmail)."</b></a>]");  
+                        print("[<a href='mailbox.php?inbox'><b><font color='#ff0000'>$unreadmail</font> ".P_("NEWPM", $unreadmail)."</b></a>]");
                     }else{
                         print("[<a href='mailbox.php'>".T_("YOUR_MESSAGES")."</a>] ");
                     }
